@@ -1,6 +1,9 @@
-public class Dog {
+public abstract class Dog {
 
-    public void doBark(){
-        System.out.println("bhaw bhaw");
+    public abstract void  doBark();
+
+    public int getLegs()
+    {
+        return 4;
     }
 }

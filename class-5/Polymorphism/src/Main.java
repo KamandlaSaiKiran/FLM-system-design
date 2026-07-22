@@ -3,7 +3,7 @@
 void main() {
     //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
     // to see how IntelliJ IDEA suggests fixing it.
-       /* Student s1  = new Student("Mainak", 28);
+        Student s1  = new Student("Mainak", 28);
         s1.print("Math");
         s1.print();
 
@@ -17,10 +17,13 @@ void main() {
         d1.doBark();
 
         Dog d2 = new Pomeranian();
-        d2.doBark();*/
+        d2.doBark();
 
         DogSoundManager dsm = new DogSoundManager();
         dsm.makeSound(new Labrador());
 
         dsm.makeSound(new Pomeranian());
+
+
+
 }
