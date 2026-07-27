@@ -25,3 +25,6 @@ Design session for a Splitwise-style expense-splitting app — sketching the OOP
 
 ## class-8-splitwise-code
 Implementation of the Splitwise design: `User`, `Group`, `Expense` with polymorphic split strategies (`EqualExpense`, `ExactAmountExpense`, `PercentageExpense`) — ties together inheritance, polymorphism, and abstraction from earlier classes.
+
+## class-9-splitwise-code-complete
+Finished, working Splitwise app: creates users/groups, adds equal and percentage-split expenses, and computes each member's running balance end-to-end (`Splitwise`, `Group.getBalance()`).
