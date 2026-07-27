@@ -19,3 +19,9 @@ Runtime polymorphism via `IDog` interface (`Labrador`, `Pomeranian` overriding `
 
 ## class-6-abstraction
 Abstraction with the `IDiscount` interface and interchangeable implementations (`MembershipDiscount`, `CreditCardDiscount`, `CouponDiscount`) — same interface, swappable logic.
+
+## class-7-splitwise-1
+Design session for a Splitwise-style expense-splitting app — sketching the OOP model (users, groups, expenses, splits) before writing code.
+
+## class-8-splitwise-code
+Implementation of the Splitwise design: `User`, `Group`, `Expense` with polymorphic split strategies (`EqualExpense`, `ExactAmountExpense`, `PercentageExpense`) — ties together inheritance, polymorphism, and abstraction from earlier classes.
