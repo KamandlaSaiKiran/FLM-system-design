@@ -28,3 +28,6 @@ Implementation of the Splitwise design: `User`, `Group`, `Expense` with polymorp
 
 ## class-9-splitwise-code-complete
 Finished, working Splitwise app: creates users/groups, adds equal and percentage-split expenses, and computes each member's running balance end-to-end (`Splitwise`, `Group.getBalance()`).
+
+## class-10-SOLID-1
+SOLID principles, part 1 — theory on decoupling, covering the Single Responsibility and Open/Closed principles.
