@@ -31,3 +31,6 @@ Finished, working Splitwise app: creates users/groups, adds equal and percentage
 
 ## class-10-SOLID-1
 SOLID principles, part 1 — theory on decoupling, covering the Single Responsibility and Open/Closed principles.
+
+## class-11-Solid-2
+SOLID principles, part 2 — recaps bad SRP/OCP code (`ShapeCalculator` with if-else chains per shape for area/volume) and introduces the Liskov Substitution Principle: `Line implements Shape` but throws `UnsupportedOperationException` on `getArea()`/`getVolume()` since a 1D shape has neither, forcing `AreaCalculator` to defensively `instanceof`-check and skip it — a textbook LSP violation.
