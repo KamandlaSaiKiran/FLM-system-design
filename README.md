@@ -34,3 +34,18 @@ SOLID principles, part 1 — theory on decoupling, covering the Single Responsib
 
 ## class-11-Solid-2
 SOLID principles, part 2 — recaps bad SRP/OCP code (`ShapeCalculator` with if-else chains per shape for area/volume) and introduces the Liskov Substitution Principle: `Line implements Shape` but throws `UnsupportedOperationException` on `getArea()`/`getVolume()` since a 1D shape has neither, forcing `AreaCalculator` to defensively `instanceof`-check and skip it — a textbook LSP violation.
+
+## class-12-solid-3
+SOLID principles, part 3 — the fix. Splits the fat `Shape` interface into `Shape1D`/`Shape2D`/`Shape3D` (Interface Segregation fixed), makes `AreaCalculator`/`VolumeCalculator` take their shape list via constructor injection instead of creating it internally (Dependency Inversion fixed), and removes the `instanceof` check entirely since every `Shape2D` now honestly honours the `getArea()` contract (Liskov fixed). Closes out L, I, and D of SOLID.
+
+## class-14-design-pattern-begin-strategypattern-1
+Intro to design patterns — Strategy Pattern, part 1 (theory).
+
+## class-15-strategy-pattern-2
+Strategy Pattern, part 2 (theory continued).
+
+## class-16-Template-Pattern
+Template Method Pattern: abstract `BeverageMaker` defines the fixed algorithm skeleton (`boilWater → brew → pourInACup → addCondiments`), with `CoffeeMaker`/`TeaMaker` overriding only the varying steps (`brew()`, `addCondiments()`).
+
+## class-17-payment-processor-template-pattern
+Template Pattern applied to a real scenario: abstract `PaymentProcessor.processOrder()` fixes the steps (validate → OTP check → create payment → pay → log), while `CardPaymentProcessor`/`CashPaymentProcessor`/`UPIPaymentProcessor` each supply their own `createPayment()` via `IPayment` implementations (`CardPayment`, `CashPayment`, `UPIPayment`).
