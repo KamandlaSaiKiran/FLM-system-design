@@ -49,3 +49,9 @@ Template Method Pattern: abstract `BeverageMaker` defines the fixed algorithm sk
 
 ## class-17-payment-processor-template-pattern
 Template Pattern applied to a real scenario: abstract `PaymentProcessor.processOrder()` fixes the steps (validate → OTP check → create payment → pay → log), while `CardPaymentProcessor`/`CashPaymentProcessor`/`UPIPaymentProcessor` each supply their own `createPayment()` via `IPayment` implementations (`CardPayment`, `CashPayment`, `UPIPayment`).
+
+## class-18-Builder
+Builder Pattern: compares a `UserProfile` with one bulky 9-arg constructor (order-dependent, easy to mis-call) against a fluent `Builder` inner class (`.name(...).email(...).age(...).build()`) that reads clearly and survives field-order/field-count changes.
+
+## class-19-state-pattern
+State Pattern via a `MediaPlayer`: starts from bad code (`bad-code/` uses a raw `State` enum with if-else branching), then fixes it with `IState` interface (`play`/`pause`/`stop`) implemented by `PlayState`/`PauseState`/`StopState` — `MediaPlayer` delegates to its current state object instead of branching on an enum, and swaps state via `setState()`.
