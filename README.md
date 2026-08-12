@@ -55,3 +55,9 @@ Builder Pattern: compares a `UserProfile` with one bulky 9-arg constructor (orde
 
 ## class-19-state-pattern
 State Pattern via a `MediaPlayer`: starts from bad code (`bad-code/` uses a raw `State` enum with if-else branching), then fixes it with `IState` interface (`play`/`pause`/`stop`) implemented by `PlayState`/`PauseState`/`StopState` — `MediaPlayer` delegates to its current state object instead of branching on an enum, and swaps state via `setState()`.
+
+## class-20-Singleton
+Singleton Pattern: private constructor plus a static `getInstance()` that lazily creates the one shared instance on first call and returns it on every call after — ensures only one object of the class ever exists.
+
+## class-21-Observer-pattern
+Observer Pattern via a YouTube notification example: `ISubject` (`subscribe`/`unsubscribe`) implemented by `YouTubeChannel`, `ISubscriber` implemented by `EmailSubscriber`/`SMSSubscriber` — `uploadVideo()` triggers `notifySubscribers()`, looping through all subscribers and calling their `notifyUser()`, so any number of observer types can react to one event without the channel knowing their details.
