@@ -61,3 +61,9 @@ Singleton Pattern: private constructor plus a static `getInstance()` that lazily
 
 ## class-21-Observer-pattern
 Observer Pattern via a YouTube notification example: `ISubject` (`subscribe`/`unsubscribe`) implemented by `YouTubeChannel`, `ISubscriber` implemented by `EmailSubscriber`/`SMSSubscriber` — `uploadVideo()` triggers `notifySubscribers()`, looping through all subscribers and calling their `notifyUser()`, so any number of observer types can react to one event without the channel knowing their details.
+
+## class-22-factory-method
+Factory Method and Abstract Factory, side by side. `Factory-for-Game`: abstract `Level.createEnemy()` is the factory method — `ForestLevel`/`SnowLevel`/`DesertLevel` each decide their own `IEnemy` (`Goblin`/`SnowMan`/`SandMan`) while `Level`'s shared logic never changes. `abstract-factory-furniture-example`: `FurnitureFactory` (`createChair`/`createSofa`) implemented by `ModernFurnitureFactory`/`VictorianFurnitureFactory`, guaranteeing `FurnitureStore` always gets a matching family of pieces, never a mismatched Modern chair with a Victorian sofa.
+
+## class-23-Adapter-pattern
+Adapter Pattern (theory) — wrapping an incompatible class (e.g. a third-party/legacy API) behind your existing interface so the rest of the codebase can keep calling the familiar contract without knowing a translation is happening underneath.
