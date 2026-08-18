@@ -1,12 +1,15 @@
 public class RewardDecorator extends BaseDecorator{
 
-    public RewardDecorator(IPayment ip) {
+    IRewardStrategy rewardStrategy;
+
+    public RewardDecorator(IPayment ip, IRewardStrategy rewardStrategy) {
         super(ip);
+        this.rewardStrategy = rewardStrategy;
     }
 
     @Override
     public void pay() {
         ip.pay();
-        System.out.println("Reward initiated");
+        rewardStrategy.getRewarded();
     }
 }

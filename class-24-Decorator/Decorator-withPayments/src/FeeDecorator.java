@@ -1,13 +1,16 @@
 public class FeeDecorator extends BaseDecorator{
 
+    IFeeStrategy feePlan;
 
-    public FeeDecorator(IPayment ip) {
+
+    public FeeDecorator(IPayment ip, IFeeStrategy feePlan) {
         super(ip);
+        this.feePlan = feePlan;
     }
 
     @Override
     public void pay() {
-        System.out.println("collecting fees");
+        feePlan.deductFee();
         ip.pay();
     }
 }

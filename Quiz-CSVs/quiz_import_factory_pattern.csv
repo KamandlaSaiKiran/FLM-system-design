@@ -1,0 +1,128 @@
+questionText,option1,option2,option3,option4,option5,correctOptions,correctOptionExplanation,points
+"Without any factory, client code does this directly inside main():
+
+if (choice == 1) {
+    return new Circle();
+} else if (choice == 2) {
+    return new Square();
+}
+
+What's the core problem this creates as more shapes get added?",The client class keeps growing and must be edited every time a new shape is added — object-creation logic is scattered wherever objects are needed,"Circle and Square would need to implement the same interface, which Java doesn't allow",It would cause a compile-time ambiguous-method error,The new keyword can only be called a limited number of times per class,,1,Scattering `new` calls across the codebase means every new type requires hunting down every call site — centralizing this is the first motivation for a factory.,2
+"A Simple Factory centralizes creation like this:
+
+class ShapeFactory {
+    Shape getShape(int choice) {
+        if (choice == 1) {
+            return new Circle();
+        } else if (choice == 2) {
+            return new Square();
+        } else {
+            return new Rectangle();
+        }
+    }
+}
+
+What does this actually fix, and what does it NOT fix?",It eliminates the new keyword from the codebase entirely,"It centralizes creation logic in one place (fixes scattering), but still has an if-else chain that must be edited for every new shape (doesn't fix OCP)",It fixes OCP completely — no class ever needs editing again to add a new shape,It removes the need for Circle/Square/Rectangle to implement a common interface,,2,Centralization and OCP-compliance are two separate wins — Simple Factory only gives you the first one.,2
+"The course notes explicitly state Simple Factory ""is not really a design pattern"" and ""breaks OCP."" Why does it break OCP specifically?",It doesn't actually break OCP — the notes are describing Factory Method instead,It breaks OCP because choice is passed as an int instead of an enum,"Every time a new shape type is added, ShapeFactory.getShape()'s existing if-else body must be modified — the class is not closed for modification","It breaks OCP because Shape must be an interface, not a class",,3,OCP requires being open for extension but closed for modification; every new shape forces you to reopen and edit getShape()'s body.,1
+"To reduce (not eliminate) the if-else problem, the notes sketch a hashmap-based version:
+
+Map<Integer, Shape> map = new HashMap<>();
+map.put(1, obj1);
+map.put(2, obj2);
+map.put(3, obj3);
+
+Shape getObj(int choice) {
+    return map.get(choice);
+}
+
+What specific improvement does this give over the if-else version, and what limitation remains?",It removes the need for a choice parameter entirely,It completely solves OCP with zero remaining limitations,It makes Shape unnecessary since the map handles typing,"getObj() itself never needs editing again (no more if-else branches to add) — but the map still has to be populated with a new entry per type somewhere, and it's now hardcoded to a fixed, non-changing set decided upfront",,4,"The branching moves from inside getObj() to the map's population step — an improvement, but a new type still requires editing the setup code somewhere.",1
+"In the hashmap version, map.get(choice) returns the SAME pre-constructed object instance every time getObj(1) is called. What behavior does this cause that a fresh new Circle() per call wouldn't?",Every caller of getObj(1) receives a reference to one shared Circle instance — mutating it in one place would be visible everywhere it's used,getObj() becomes unusable after the first call since the map entry is consumed,"It automatically creates a new Circle each time under the hood, identical to new Circle()",It throws a ConcurrentModificationException on the second call,,1,"HashMap.get() just returns the stored reference — it doesn't construct anything new, so shared mutable state becomes a real risk.",2
+"Given the hashmap-based factory returns shared pre-built instances, in what kind of real scenario would this actually be the RIGHT choice rather than a limitation?",Only in single-threaded programs,When the objects being returned are stateless or meant to be shared/reused (similar to why PlayState/PauseState/StopState in class-20 were made Singletons) — no per-use uniqueness is needed,Never — sharing instances is always a bug regardless of context,Only when choice is a String instead of an int,,2,This connects directly back to class-20's insight: stateless objects are safe (and often preferable) to share as single instances.,1
+"If you wanted the hashmap factory to return a brand-new object each time instead of a shared one, what would you have to change?","Change Map<Integer, Shape> to Map<Integer, Integer>",Mark the map as volatile,"Store a way to construct new instances (e.g. a Supplier<Shape> or constructor reference per key) instead of storing already-built objects, and call it fresh inside getObj()",Nothing — HashMap.get() already constructs a new object automatically for non-primitive types,,3,"You'd need the map to hold factories/suppliers of shapes rather than the shapes themselves, so each get() triggers fresh construction.",1
+"A teammate says: ""Simple Factory is basically the same thing as Factory Method, just written differently."" Based on how the course structures these as separate concepts, what's the actual structural difference?",They are functionally and structurally identical — the distinction is purely academic,"Simple Factory always returns interfaces, Factory Method always returns abstract classes",Factory Method is Simple Factory with multithreading added,"Simple Factory is one class with an if-else/map branching internally on a passed-in choice; Factory Method has no branching at all — each subclass overrides an abstract creation method to return its own fixed type, with the choice of subclass made by which class you instantiate",,4,Simple Factory branches at runtime inside one method; Factory Method resolves the branch at compile time via subclass selection — a fundamentally different mechanism.,3
+"If your app has 3 shape types today and you're confident that number will grow every few weeks as new shape types are added, why might the notes' framing suggest moving away from Simple Factory (map or if-else based) toward Factory Method or Abstract Factory instead?","Both if-else and hashmap Simple Factory require editing the factory's own source (new branch, or new map entry) for every new type, while Factory Method lets you add a new type by writing an entirely new subclass without touching existing factory code at all",Factory Method requires fewer total classes than Simple Factory in every case,"Simple Factory is objectively faster at runtime, so this tradeoff doesn't matter","Simple Factory cannot return interface types, only concrete classes",,1,"Frequent growth is exactly the scenario where OCP violations (constant edits to existing code) become a real maintenance cost, motivating the move to Factory Method.",3
+"Given Map<Integer, Shape> map populated with 1 -> obj1, 2 -> obj2, 3 -> obj3 and getObj(choice) { return map.get(choice); }, what happens if getObj(4) is called and no entry exists for key 4?",It automatically falls back to obj1,"It returns null — HashMap.get() on a missing key returns null rather than throwing, so the caller must handle a possible null result",It throws a NoSuchElementException,It throws a compile-time error since 4 wasn't declared as a valid choice,,2,"HashMap.get() never throws for a missing key — it silently returns null, a common source of downstream NullPointerExceptions if not checked.",1
+"Real class-22 code:
+
+public abstract class Level {
+    abstract IEnemy createEnemy();
+
+    public void startLevel(){
+        IEnemy enemy = createEnemy();
+        enemy.attack();
+    }
+}
+
+public class ForestLevel extends Level {
+    @Override
+    IEnemy createEnemy() {
+        return new Goblin();
+    }
+}
+
+Where does the actual new Goblin() call live, and why does startLevel() never need to know which enemy type it's creating?",IEnemy itself contains a static factory method that all Level subclasses call,It lives inside Level.startLevel() directly via an if-else on level type,"It lives inside ForestLevel.createEnemy() — startLevel() only calls the abstract createEnemy() and works polymorphically, staying identical regardless of which subclass runs it",Main.java constructs the Goblin and passes it into startLevel() as a parameter,,3,startLevel() is a fixed skeleton that delegates the varying part (which enemy) to whichever subclass is actually running.,1
+"Given Main.java:
+
+Level forest = new SnowLevel();
+forest.startLevel();
+
+despite the variable being named forest, what actually gets attacked, and why?",It throws a ClassCastException since the variable name doesn't match the object type,Nothing — Level requires the variable name to match the subclass name to compile,"A Goblin — since the variable is named forest, matching ForestLevel","A SnowMan — the variable name is irrelevant; the actual object is SnowLevel, whose createEnemy() returns new SnowMan(), so startLevel() calls SnowMan.attack()",,4,"Variable names are purely for the programmer's benefit — Java dispatches based on the actual runtime object type, not the identifier used to reference it.",1
+"createEnemy() in Level.java has no access modifier (package-private), and ForestLevel/SnowLevel/DesertLevel override it also without an access modifier. What would happen if createEnemy() were instead declared private abstract IEnemy createEnemy();?","It wouldn't compile — private and abstract are contradictory; a private method can't be overridden, but abstract methods must be overridable by definition",It would silently become a static method instead,startLevel() would need to be made private too,"It would compile fine and work identically, just with stricter encapsulation",,1,"private hides a method from subclasses entirely, while abstract exists specifically to be implemented by subclasses — the two modifiers cannot coexist.",1
+"If you want to add a CaveLevel that spawns a new Bat implements IEnemy, what exactly must you touch in the existing Level, ForestLevel, SnowLevel, and DesertLevel classes?",You must edit IEnemy to add a isCaveEnemy() method,"Nothing in any of them — you write Bat implements IEnemy and CaveLevel extends Level with its own createEnemy() override, and the existing classes remain completely untouched",You must add a new branch inside Level.startLevel() to handle the Cave case,You must edit ForestLevel since it's the first subclass and acts as a base for new ones,,2,"This is Factory Method's core OCP payoff: new variants are pure additions, never edits to existing code.",1
+"startLevel() is concrete (has a body) while createEnemy() is abstract, both living in the same Level class. What established course pattern is Level structurally combining with Factory Method here?",Singleton — because Level has only one instance per subclass,Adapter — because Level adapts IEnemy to a different interface,"Template Method — startLevel() is a fixed-skeleton method that calls a varying abstract step (createEnemy()), the same shape as BeverageMaker.makeBeverage() calling abstract brew()",Observer — because startLevel() notifies enemies of level start,,3,"Factory Method is frequently found nested inside a Template Method's fixed skeleton, exactly as seen with BeverageMaker/PaymentProcessor earlier in the course.",1
+"If Goblin, SnowMan, and SandMan all had identical attack() bodies except for the printed string, would IEnemy still be worth having as an interface rather than just using one Enemy class with a type field and an if-else in attack()?",IEnemy provides no benefit since attack() never varies polymorphically here,"No — with only one line different per enemy, a single class with a type field is strictly better in every case",It only matters once there are more than 5 enemy types,"Yes — the interface keeps Level.createEnemy() and startLevel() decoupled from concrete enemy types entirely; the if-else version would need every attack() call site (or the class itself) to branch on type, reintroducing the exact problem Factory Method avoids",,4,Even simple variation-by-string reintroduces if-else branching somewhere — keeping the interface preserves the pattern's benefit regardless of how small the difference between implementations is.,1
+"Compare Level's Factory Method (createEnemy(), one product per subclass) to the earlier Simple Factory (ShapeFactory.getShape(int choice), one class branching on a parameter). What's the fundamental structural difference in HOW the ""which type to create"" decision gets made?",Simple Factory decides at runtime via a parameter checked inside one method's branching logic; Factory Method decides at compile/construction time via which subclass you instantiate — no branching logic exists anywhere,Factory Method requires reflection to decide the type; Simple Factory doesn't,They're identical — both decide the type via a runtime parameter,Simple Factory can only create one object per program run; Factory Method can create unlimited objects,,1,This is the crux of the two patterns' difference: parameter-driven branching versus subclass-driven polymorphism.,1
+"A tester wants to unit-test that ForestLevel.startLevel() calls Goblin.attack() specifically, without worrying about SnowLevel or DesertLevel at all. What does the Factory Method structure make easy here that a single LevelFactory.getEnemy(int levelType) (Simple-Factory style) wouldn't?",Simple Factory style is actually easier to test since everything is in one method,"Each Level subclass is independently testable in isolation — testing ForestLevel never requires touching or even being aware of SnowLevel's or DesertLevel's code, unlike a single shared factory method holding all branches together",Neither approach is testable without mocking IEnemy first,"Factory Method requires a separate test framework, unlike Simple Factory",,2,Isolation of each variant into its own subclass is a natural testability win that falls out of Factory Method's structure.,1
+"If DesertLevel.createEnemy() were changed to sometimes return a SandMan and sometimes return a new Scorpion() based on a random roll, would this still be ""Factory Method"" in the pattern sense?","Yes, but only if Scorpion and SandMan share a common parent class instead of both implementing IEnemy",No — Factory Method requires each subclass to always return exactly one hardcoded type with no variation,"Yes — Factory Method only requires that subclasses control what gets created via the overridden method; the method's internal logic (fixed, random, conditional) is an implementation detail, not part of the pattern's definition",No — introducing randomness converts it into the Strategy pattern automatically,,3,"The pattern's definition is about WHERE the creation decision lives (the overridden method), not about how deterministic that method's internal logic is.",1
+"IEnemy has exactly one method, attack(). If a new requirement demands enemies also have a getHealthPoints() method, what's required across Goblin, SnowMan, and SandMan, and does this have anything to do with Factory Method itself?",Level.createEnemy() must be changed to call getHealthPoints() internally for this to work,"Only Goblin needs it, since it's the first enemy class created",Factory Method automatically generates getHealthPoints() for all IEnemy implementers,"Each of the three concrete enemy classes must implement getHealthPoints() since it becomes part of the IEnemy contract — this is unrelated to Factory Method, which only governs how enemies get created, not what methods IEnemy itself declares",,4,"Growing the IEnemy interface itself is an ISP/interface-design concern, separate from how Factory Method governs the moment of object creation.",1
+"Real class-22 code:
+
+public interface FurnitureFactory {
+    Chair createChair();
+    Sofa createSofa();
+}
+
+public class ModernFurnitureFactory implements FurnitureFactory {
+    @Override
+    public Chair createChair() {
+        return new ModernChair();
+    }
+
+    @Override
+    public Sofa createSofa() {
+        return new ModernSofa();
+    }
+}
+
+What's the key structural difference between FurnitureFactory here and Level's single createEnemy() from Factory Method?","FurnitureFactory produces a whole FAMILY of related products (a matching Chair + Sofa) through one factory object, whereas Level's Factory Method produces just one product type (an enemy) per subclass","There's no real difference — both are Factory Method, just with different names","FurnitureFactory is only usable with exactly two product types, by definition",FurnitureFactory uses static methods while Level uses instance methods,,1,"Abstract Factory generalizes Factory Method from ""one product"" to ""a coordinated family of products"" created via a single factory object.",1
+"Given FurnitureStore:
+
+public class FurnitureStore {
+    private final FurnitureFactory factory;
+
+    public FurnitureStore(FurnitureFactory factory) {
+        this.factory = factory;
+    }
+
+    public void furnishRoom() {
+        Chair chair = factory.createChair();
+        Sofa sofa = factory.createSofa();
+        chair.sitOn();
+        sofa.lieOn();
+    }
+}
+
+If FurnitureStore is constructed with new ModernFurnitureFactory(), is it possible for furnishRoom() to accidentally mix in a VictorianChair with a ModernSofa?","Yes — FurnitureStore would need an explicit if check to prevent mixing, which is missing from the real code","No — since both createChair() and createSofa() are called on the SAME factory instance, and that instance is fixed at construction, the family stays consistent by construction",Yes — createChair() and createSofa() could independently resolve to different families since they're separate method calls,Only if Chair and Sofa share a common parent interface,,2,"Because factory is a single fixed field, every product pulled from it necessarily belongs to the same family — this guarantee is Abstract Factory's whole point.",1
+"This ""family consistency guarantee"" — that you literally cannot end up with a mismatched Modern chair + Victorian sofa as long as you go through one factory — is Abstract Factory's core selling point over what alternative?",Manually calling ShapeFactory.getShape(choice) for both chair and sofa,Using Level.createEnemy() for both chair and sofa creation,"Manually calling new ModernChair() and new VictorianSofa() directly wherever furniture is needed, where nothing stops a typo or copy-paste error from mixing families",There's no real alternative being contrasted — Abstract Factory is the only way to create two related objects,,3,"The contrast is against direct, uncoordinated `new` calls scattered through client code, where nothing enforces that related objects stay from the same family.",1
+"To add a third theme, ScandinavianFurnitureFactory, what exactly needs to be created, and does FurnitureStore.java need any changes?",Chair and Sofa interfaces must each be extended with Scandinavian variants,FurnitureStore.furnishRoom() must add a new else if branch for the Scandinavian case,FurnitureFactory interface itself must be edited to add Scandinavian-specific methods,"Create ScandinavianChair implements Chair, ScandinavianSofa implements Sofa, and ScandinavianFurnitureFactory implements FurnitureFactory — FurnitureStore needs zero changes since it only depends on the FurnitureFactory interface",,4,Adding a new family is a pure addition of new classes — the client (FurnitureStore) never needs modification.,1
+"If a new product type, Table, needs to be added to every existing furniture family (Modern gets a ModernTable, Victorian gets a VictorianTable), what DOES need to change now, unlike adding a new theme in the previous question?","FurnitureFactory interface itself needs a new createTable() method, which forces every existing implementer (ModernFurnitureFactory, VictorianFurnitureFactory) to be edited to provide it — adding a new PRODUCT is expensive, unlike adding a new FAMILY","Nothing changes anywhere — Abstract Factory handles new product types with zero edits, symmetric to new themes","Only FurnitureStore needs editing, not the factories themselves",Chair and Sofa interfaces need a shared parent interface before Table can be added,,1,"This is Abstract Factory's known asymmetry: cheap to extend with new families, expensive to extend with new product types across all families.",1
+The previous two questions together reveal an asymmetry in Abstract Factory's extensibility. How would you summarize it in one sentence?,Both adding a new family and adding a new product type are equally expensive in Abstract Factory,"Adding a new FAMILY (new factory + matching product set) is cheap and requires zero changes to existing code, but adding a new PRODUCT TYPE across all existing families is expensive since it forces every existing factory implementation to be edited","Abstract Factory doesn't support adding new families at all, only new product types",Both adding a new family and adding a new product type are equally cheap in Abstract Factory,,2,"This mirrors a very common real-world tradeoff: Abstract Factory optimizes for ""more variants of the same shape,"" not for ""changing the shape itself.""",1
+"Main.java does:
+
+FurnitureStore modernStore = new FurnitureStore(new ModernFurnitureFactory());
+modernStore.furnishRoom();
+
+What role does Main play here, and why is it significant that FurnitureStore's constructor takes FurnitureFactory factory (the interface) rather than ModernFurnitureFactory factory (the concrete class)?",FurnitureFactory as a parameter type is required because Java forbids concrete classes as constructor parameters,"It's purely stylistic — FurnitureStore would behave identically either way, with no design implication",Main is the composition root deciding which concrete factory to use; typing the constructor parameter to the interface means FurnitureStore itself never needs to change to support a new theme — only Main needs a one-line change to switch families,"Main acts as the Abstract Factory itself, and ModernFurnitureFactory is just a data holder",,3,"Depending on the abstraction (FurnitureFactory) rather than a concrete class is the DIP payoff — the client's only coupling point to a specific theme lives in Main, not inside FurnitureStore.",1
+"Compare FurnitureFactory (Abstract Factory, createChair() + createSofa() together) to Level (Factory Method, just createEnemy()). If Level were extended to ALSO create a matching IWeapon per level (e.g. ForestLevel creates a Goblin + a themed Dagger, SnowLevel creates a SnowMan + a themed IceSpear), what would Level effectively be evolving into?",This isn't possible in Java — one class can only have one abstract factory method,"It would just be a bigger Factory Method with two abstract methods, unrelated to Abstract Factory at all","It would become Simple Factory instead, since two objects are now returned","It would evolve from plain Factory Method into something structurally like Abstract Factory — producing a matched FAMILY (enemy + weapon) per level/theme, rather than just one product",,4,"This is exactly the natural growth path from Factory Method to Abstract Factory: once you need more than one coordinated product per variant, you're building a family, which is Abstract Factory's territory.",1
+"Chair and Sofa are separate, unrelated interfaces (sitOn() vs lieOn()) — FurnitureFactory just happens to know how to create one of each. Is it a requirement of Abstract Factory that all products in a family share a common parent interface?","No — Abstract Factory only requires that the FACTORY interface declares one creation method per product type in the family; the products themselves (Chair, Sofa) can be entirely unrelated types, as shown here",Yes — Chair and Sofa would need to both implement a shared Furniture interface for this to be valid Abstract Factory,"No, but only if there are fewer than 3 products per family",Yes — otherwise FurnitureStore.furnishRoom() wouldn't compile,,1,"Abstract Factory coordinates creation of a family, but does not require the family members themselves to share an interface — Chair and Sofa here are proof of that.",1
+"A junior dev asks: ""Why not just skip Abstract Factory and have FurnitureStore call new ModernChair() and new ModernSofa() directly, with an if(theme.equals(""modern"")) check inside furnishRoom()?"" Using everything covered across Simple Factory, Factory Method, and Abstract Factory, what's the most complete answer?",The if-else version is actually preferable since it avoids creating extra factory classes,"That reintroduces the exact if-else-branching-on-type problem Simple Factory already showed is fragile and breaks OCP — every new theme means editing furnishRoom() directly, whereas the real Abstract Factory design lets FurnitureStore stay untouched and only requires a new factory class per theme, consistent with the Factory Method and Abstract Factory principles already established","This concern only applies to Simple Factory, not to Abstract Factory-style code",There's no real downside — both approaches are equally maintainable regardless of how many themes exist,,2,This question ties the whole 30-question arc together: the if-else problem shown in Simple Factory never actually goes away on its own — Factory Method and Abstract Factory are the deliberate structural fixes for it.,3
