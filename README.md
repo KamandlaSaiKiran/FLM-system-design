@@ -67,3 +67,9 @@ Factory Method and Abstract Factory, side by side. `Factory-for-Game`: abstract 
 
 ## class-23-Adapter-pattern
 Adapter Pattern (theory) — wrapping an incompatible class (e.g. a third-party/legacy API) behind your existing interface so the rest of the codebase can keep calling the familiar contract without knowing a translation is happening underneath.
+
+## class-24-Decorator
+Decorator Pattern on `IPayment`: abstract `BaseDecorator` holds the wrapped `IPayment` so concrete decorators don't repeat that boilerplate — `FeeDecorator`/`RewardDecorator` layer fee (`CardFee`/`UPIFee`) and reward (`CardReward`/`UPIReward`) behavior onto `CardPayment`/`UPIPayment` by stacking wrappers, instead of writing a combinatorial-explosion of Fee+Reward subclasses per payment type.
+
+## class-25-hw-diisc-composition-composite-facade-proxy-pattern
+Four patterns in one class, plus ready-made quiz CSVs (`Quiz-CSVs/`) for composite, composition-vs-inheritance, facade, and proxy. **Composite**: `FileSystemItem` interface (`getSize()`) implemented uniformly by `File` (leaf) and `Folder` (holds children, sums their sizes) — same for `Employee`/`Manager`/`IndividualContributor`, treating individuals and groups through one interface. **Facade**: `CheckoutFacade.checkout()` hides `PaymentValidator` → `FraudCheckService` → `PaymentGateway` → `NotificationService` behind one simple call. **Proxy**: `DocumentProxy` defers creating the expensive `RealDocument` until `display()` is actually called (lazy loading), compared against `bad-code/` which loads it eagerly on construction.

@@ -1,0 +1,140 @@
+questionText,option1,option2,option3,option4,option5,correctOptions,correctOptionExplanation,points
+"Composition means a class HOLDS a reference to another object as a field (a ""has-a"" relationship). Inheritance means a class EXTENDS another class (an ""is-a"" relationship). Looking at real code from this course:
+
+public class FeeDecorator extends PaymentDecorator {
+    ...
+}
+
+public class PaymentDecorator implements IPayment {
+    protected IPayment ip;
+    ...
+}
+
+Which relationship does PaymentDecorator's ip field represent — composition or inheritance?","Composition — PaymentDecorator holds an IPayment object as a field, it doesn't extend it","Inheritance — PaymentDecorator ""is-a"" IPayment object",Neither — fields are unrelated to either concept,Both — Java doesn't distinguish between the two,,1,A field holding a reference to another object is the definition of composition — no extends keyword is involved here.,1
+"Same file, different relationship:
+
+public class FeeDecorator extends PaymentDecorator {
+
+Is this composition or inheritance, and why?","Neither — extends only applies to interfaces, not classes","Inheritance — FeeDecorator uses the extends keyword, meaning it ""is-a"" PaymentDecorator, gaining its fields and methods directly rather than holding a separate PaymentDecorator object",Both — extends always implies an internal field reference too,Composition — FeeDecorator is just reusing PaymentDecorator's code,,2,"extends is the defining keyword for inheritance in Java — it establishes an is-a relationship, not a has-a one.",1
+"Real code from class-21:
+
+public class EmailSubscriber extends User {
+    private String email;
+    ...
+}
+
+Is EmailSubscriber's relationship to User composition or inheritance?","Composition — EmailSubscriber has an email field, which counts as composition",Composition — because EmailSubscriber overrides notifyUser(),"Inheritance — EmailSubscriber extends User directly, gaining User's fields and methods as its own, rather than storing a User object inside itself",It's ambiguous without seeing User's own code,,3,"The extends keyword on User is what determines the relationship type here, not the presence of EmailSubscriber's own unrelated email field.",1
+"Real code from class-19/20:
+
+public class MediaPlayer {
+    private IState state = StopState.getInstance();
+    ...
+}
+
+Is MediaPlayer's relationship to IState composition or inheritance?","Inheritance — MediaPlayer ""is-a"" state",Both — since state is assigned a concrete value in the field declaration,Neither — this is an example of the Proxy relationship instead,Composition — MediaPlayer holds an IState reference as a field; it does not extend IState or any state class,,4,"A stored field reference, regardless of whether it's assigned a default value, is composition, not inheritance.",1
+"A junior dev says: ""MediaPlayer COULD have been written as MediaPlayer extends PlayState instead of holding an IState field — same end result, just inheritance instead of composition."" What's the concrete problem with this suggestion, given MediaPlayer needs to represent playing, paused, AND stopped states over its lifetime?","A single class can only extend ONE class in Java — if MediaPlayer extends PlayState, it could never also ""be"" PauseState or StopState at different points in time; composition lets MediaPlayer swap which state object its state field points to at runtime, something inheritance to a single fixed parent can never do",This would only be a problem if IState were a class instead of an interface,There's no real problem — MediaPlayer extends PlayState would work identically,PlayState would need to be declared final to prevent this from working,,1,"This is the core reason composition was chosen for State: the ability to change what's referenced at runtime, which fixed single inheritance cannot offer.",1
+"Real code from class-22:
+
+public abstract class Level {
+    abstract IEnemy createEnemy();
+    public void startLevel(){
+        IEnemy enemy = createEnemy();
+        enemy.attack();
+    }
+}
+public class ForestLevel extends Level {
+    IEnemy createEnemy() { return new Goblin(); }
+}
+
+This code uses BOTH inheritance and composition — identify each. ForestLevel's relationship to Level is one; startLevel()'s local enemy variable relationship to IEnemy is the other.","Both relationships are composition, since neither uses the extends keyword directly on IEnemy","ForestLevel extends Level is inheritance (is-a); Level's startLevel() obtaining and using an IEnemy object is composition-flavored usage (has-a, at least for the duration of that method call), even though enemy isn't stored as a field here",ForestLevel extends Level is composition; enemy is inheritance,"Both relationships are inheritance, since IEnemy is also extended",,2,"Both flavors of relationship can appear in the same small piece of code — inheritance for the class hierarchy, and object-holding usage for how Level works with an IEnemy.",2
+"Real code from class-25 (Composite, file system example):
+
+public class Folder implements FileSystemItem {
+    private List<FileSystemItem> children;
+    ...
+}
+
+Folder implements FileSystemItem (like File does) AND holds a List<FileSystemItem> as a field. Which relationship is which, and why does Folder need BOTH simultaneously rather than just one?",The List field is inheritance since it's typed to the same interface Folder implements,Both are the same relationship expressed two different ways,"implements FileSystemItem establishes the is-a relationship (so a Folder can be treated exactly like a File wherever FileSystemItem is expected, including being added inside another Folder); the List<FileSystemItem> children field is composition (has-a), letting Folder hold any number of child items — neither alone would let a folder both BE a file-system item AND CONTAIN other file-system items","implements is composition here since FileSystemItem is an interface, not a class",,3,"Folder needs both relationships simultaneously to work as a container: is-a for substitutability, has-a for holding its contents.",1
+"Real code from class-25 (Facade):
+
+public class CheckoutFacade {
+    private PaymentValidator validator;
+    private FraudCheckService fraudCheck;
+    private PaymentGateway gateway;
+    private NotificationService notifier;
+    ...
+}
+
+CheckoutFacade has FOUR fields, each a different concrete class, with no extends anywhere. Is this composition, and if so, why does CheckoutFacade use four separate fields rather than one shared interface field (the way Folder uses one List<FileSystemItem>)?",Composition only counts when there's exactly one field; four fields makes this something else entirely,"CheckoutFacade should have used extends on all four classes simultaneously, but Java doesn't allow it, which is a limitation being worked around here","This is actually inheritance, since CheckoutFacade depends on all four classes","Yes, this is composition — but unlike Folder's children (which are all interchangeable FileSystemItems doing the same conceptual job), CheckoutFacade's four fields are four DIFFERENT, unrelated responsibilities (validation, fraud-checking, charging, notifying) that don't share a common interface, so each needs its own dedicated field rather than being pooled into one collection",,4,Composition doesn't require a single field or a shared type — a class can hold any number of unrelated dependencies as separate fields.,1
+"Real code from class-25 (Proxy):
+
+public class DocumentProxy implements Document {
+    private String filename;
+    private RealDocument realDocument;
+    ...
+}
+
+Why does DocumentProxy hold a RealDocument field via composition instead of doing DocumentProxy extends RealDocument?","RealDocument's constructor eagerly loads the file (loadFromDisk()) — if DocumentProxy extends RealDocument, constructing a DocumentProxy would ALSO trigger RealDocument's constructor (since a subclass constructor always invokes its parent's), defeating the entire purpose of delaying that expensive load; composition lets DocumentProxy avoid ever constructing a RealDocument until display() is actually called",There's no real reason — both approaches would behave identically,"RealDocument is declared final, which is why extending it is impossible","Interfaces cannot be extended by classes, so this is a language restriction rather than a design choice",,1,"This is a very concrete, practical reason to prefer composition: inheritance forces the parent constructor to run immediately, which would break the whole point of lazy loading.",1
+"This is one of the sharpest reasons composition is often preferred over inheritance: with inheritance, a subclass's constructor is FORCED to run its parent's constructor first (super(), explicit or implicit) — you cannot skip it. With composition, when does the held object actually get constructed?",The held object is constructed automatically by the JVM the first time the field is declared,"Whenever the containing class's code chooses to construct it — DocumentProxy deliberately delays constructing RealDocument until display() is called, something impossible if DocumentProxy had inherited from RealDocument instead, since parent constructors always run immediately during subclass construction","Composition also forces immediate construction, identical to inheritance",There's no timing difference between the two approaches,,2,Composition gives full control over WHEN (or even whether) the held object gets constructed — a freedom inheritance's mandatory super() call does not offer.,1
+"Real code from class-20:
+
+public class PlayState implements IState {
+    private static final PlayState singleton = new PlayState();
+    private PlayState(){}
+    public static PlayState getInstance(){ return singleton; }
+    ...
+    public void pause(MediaPlayer player) {
+        player.setState(PauseState.getInstance());
+    }
+}
+
+PlayState.pause() takes a MediaPlayer player parameter and calls player.setState(...). Is this a composition relationship between PlayState and MediaPlayer? Why or why not, given PlayState never stores player as a field?","Yes — this is composition because MediaPlayer also holds an IState field, making the relationship mutual","This is inheritance, since PlayState implements IState and MediaPlayer also references IState","No — this is neither composition nor inheritance in the strict sense; player is a method parameter, used only for the duration of that one method call, not a stored field. True composition requires the referencing class to HOLD the other object as a field over time, not just receive it transiently as an argument","Yes — any time one class's method takes another class as a parameter, that's composition by definition",,3,"A crucial distinction: composition specifically means holding a reference as a field over time, not merely receiving one as a transient method parameter.",1
+"Given the previous question's distinction — that composition specifically means HOLDING a reference as a field over time, not just receiving one as a parameter — look at Processor from the Adapter-pattern folder:
+
+public class Processor {
+    private IPayment ip;
+    public Processor(IPayment ip) {
+        this.ip = ip;
+    }
+    public void process() {
+        ip.pay();
+    }
+}
+
+Does Processor demonstrate true composition by this stricter definition?","No — since ip is passed in through the constructor, this is actually a parameter, not composition","Yes, but only because process() has no parameters of its own","No — composition requires the held type to be a concrete class, not an interface","Yes — ip is stored as a field (private IPayment ip) via the constructor, persisting beyond any single method call, which is exactly what distinguishes true composition from merely passing a parameter into one method",,4,"The constructor parameter is just how the field gets its initial value — what makes it composition is that the value is then stored as a field, not that it arrived via a parameter.",1
+"A teammate refactors EmailSubscriber (currently extends User) into using composition instead — holding a User user field rather than extending it:
+
+public class EmailSubscriber implements ISubscriber {
+    private User user;
+    private String email;
+    ...
+    public void notifyUser(String message) {
+        System.out.println(""Email sending started to "" + email);
+        user.notifyUser(message);
+        System.out.println(""Email sending completed"");
+    }
+}
+
+Functionally, does this produce the same behavior as the original extends User version?",Yes — user.notifyUser(message) achieves the same effect as super.notifyUser(message) did in the inheritance version; the composition version just calls the held User object's method explicitly instead of relying on the implicit parent-method-call mechanism,No — composition cannot be used to replace inheritance in any circumstance where super was originally used,No — implements ISubscriber is required to also extend User for this to compile,"Yes, but only if User is changed to be an interface first",,1,Composition can replicate what super-calls achieve under inheritance — the held object's method is called explicitly instead of implicitly.,1
+"Given the previous rewrite works, what's the actual tradeoff of switching EmailSubscriber from inheritance (extends User) to composition (private User user)?",Composition requires User to be declared abstract first,"With composition, EmailSubscriber no longer automatically inherits ALL of User's public methods and fields for free — anything EmailSubscriber wants to expose from User (like getName()) now has to be manually written as a delegating method (e.g. public String getName() { return user.getName(); }), whereas inheritance gave access to User's public API automatically just by extending it",Composition would make EmailSubscriber unable to implement ISubscriber at all,There is no tradeoff whatsoever — both versions behave identically in every respect,,2,"This is the central practical cost of composition versus inheritance: nothing is automatically exposed, everything has to be deliberately delegated.",1
+"This tradeoff has a name worth knowing: with inheritance, a subclass inherits its parent's ENTIRE public interface automatically, whether it wants all of it or not. With composition, the containing class only exposes exactly what it chooses to manually delegate. Given RewardDecorator only needs IPayment's single pay() method (not a hypothetical User's ten methods), why might this ""must manually delegate everything you want to expose"" property of composition actually be a GOOD thing here rather than a downside?",It's never a good thing — composition should be avoided whenever inheritance is available,It only matters if the parent class has private fields,"It prevents RewardDecorator from accidentally inheriting and exposing methods it has no business exposing — since IPayment only has one method (pay()) anyway, there's nothing extra to accidentally leak, but in general, composition lets a class expose a deliberately narrow, curated interface instead of automatically inheriting everything a parent class happens to have, public or not",This property is unique to IPayment and doesn't generalize to other interfaces,,3,"Deliberate, narrow exposure is a genuine advantage of composition — it prevents unintentionally leaking a large inherited API surface.",1
+"Trace through a genuinely tricky case. SMSSubscriber extends User (real code). Suppose User gets a new method added: public void logActivity() { System.out.println(""logging...""); }. Does SMSSubscriber need ANY code changes to gain this new method?","No, but only if SMSSubscriber is recompiled with a special flag",Yes — SMSSubscriber would need @Override added even for methods it doesn't override,Yes — every subclass must explicitly redeclare every new parent method to use it,"No — since SMSSubscriber inherits from User via extends, it automatically gains logActivity() for free the moment it's added to User, with zero changes needed in SMSSubscriber.java itself",,4,Inheritance automatically propagates any new parent method to every subclass — no changes needed anywhere downstream.,1
+"Now the composition equivalent: if EmailSubscriber held a private User user field (composition, as rewritten earlier) and User gained the same new logActivity() method, does EmailSubscriber automatically gain a callable logActivity() method of its own?",No — composition does NOT automatically expose the held object's methods; EmailSubscriber would need to manually add its own public void logActivity() { user.logActivity(); } delegating method before external callers could call emailSubscriber.logActivity() directly,"Yes, but only for methods marked public","No, and there is no way to expose it at all under composition",Yes — composition and inheritance both automatically expose all of the referenced/parent class's methods identically,,1,This is the direct contrast with inheritance's automatic propagation — composition requires an explicit delegating method for every capability you want exposed.,1
+The previous two questions together reveal the central practical tradeoff between inheritance and composition. State it as one clean rule.,"Composition always requires more total lines of code than inheritance in every single case, with no exceptions","Inheritance automatically propagates ALL of a parent's public API to every subclass, including future additions — convenient, but means a subclass's public surface can silently grow without the subclass author doing anything; composition requires EVERY exposed method to be manually delegated, which is more code upfront but keeps a class's public surface exactly as small and deliberate as its author wants",Inheritance is strictly better whenever a parent class has more than 3 methods,Inheritance and composition propagate new methods identically; the only difference is syntax (extends vs a field),,2,This is the summary rule tying together the automatic-propagation-versus-deliberate-exposure tradeoff explored across the previous few questions.,2
+"Real code from class-16/17 (Template Method):
+
+public abstract class BeverageMaker {
+    abstract void brew();
+    abstract void addCondiments();
+    void boilWater() { ... }
+    void pourInACup() { ... }
+    public void makeBeverage() {
+        boilWater();
+        brew();
+        pourInACup();
+        addCondiments();
+    }
+}
+
+Template Method relies on inheritance (extends BeverageMaker) specifically, rather than composition. Given everything discussed about composition's flexibility (swappable at runtime, narrow exposed surface), why does Template Method deliberately choose inheritance here instead?",Inheritance was chosen purely because Java doesn't support composition for methods with no return value,Composition is impossible to use whenever abstract methods are involved,"Template Method's whole point is that makeBeverage()'s fixed sequence (boilWater, brew, pourInACup, addCondiments) is shared, unchangeable structure that EVERY beverage must follow — inheritance is the natural fit because subclasses aren't swapping in a different BeverageMaker at runtime, they're permanently specializing exactly two fixed steps (brew, addCondiments) while keeping the rest identical, which is precisely what ""is-a specialized version of"" (inheritance) captures, not ""has-a swappable behavior"" (composition)","Template Method could have used composition instead with zero behavioral difference, and the choice was arbitrary",,3,This is why Template Method and State choose differently: fixed permanent specialization fits inheritance; runtime-swappable behavior fits composition.,1
+"Pull together MediaPlayer (composition: IState state swappable at runtime) and BeverageMaker (inheritance: fixed permanent specialization). State the general rule for choosing between the two, in a way that would help decide correctly on a brand-new problem neither has been discussed yet.",The choice between them has no practical consequence and can be made arbitrarily,Always default to inheritance since it requires less code to write initially,Always default to composition since inheritance is universally considered a mistake in every case,"Reach for inheritance when a set of variants share a fixed, permanent structure and only specialize a small, unchanging part of it once at construction (like Espresso always being an Espresso and always following the same beverage-making steps); reach for composition when the varying behavior needs to change dynamically over the object's lifetime, when multiple unrelated behaviors need to be combined in one object, or when you want to keep the containing class's exposed API deliberately narrow rather than inheriting an entire parent's public surface",,4,"This is the synthesis rule tying the whole quiz together: permanent, fixed specialization suits inheritance, while dynamic, swappable, or narrowly-exposed behavior suits composition.",3
