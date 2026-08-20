@@ -73,3 +73,9 @@ Decorator Pattern on `IPayment`: abstract `BaseDecorator` holds the wrapped `IPa
 
 ## class-25-hw-diisc-composition-composite-facade-proxy-pattern
 Four patterns in one class, plus ready-made quiz CSVs (`Quiz-CSVs/`) for composite, composition-vs-inheritance, facade, and proxy. **Composite**: `FileSystemItem` interface (`getSize()`) implemented uniformly by `File` (leaf) and `Folder` (holds children, sums their sizes) — same for `Employee`/`Manager`/`IndividualContributor`, treating individuals and groups through one interface. **Facade**: `CheckoutFacade.checkout()` hides `PaymentValidator` → `FraudCheckService` → `PaymentGateway` → `NotificationService` behind one simple call. **Proxy**: `DocumentProxy` defers creating the expensive `RealDocument` until `display()` is actually called (lazy loading), compared against `bad-code/` which loads it eagerly on construction.
+
+## class-26-parking-lot-LLD-1
+Full LLD problem statement: design a multi-floor Parking Lot system (spot allocation by size/vehicle-type compatibility, entry/exit + ticketing, swappable fee schemes, spot state — Available/Occupied/Reserved, cross-floor availability reporting, centralized object creation, single shared lot instance, one simple external entry/exit call, and a stretch goal for lazy/access-controlled ticket lookups). Written to deliberately map onto nearly every pattern covered so far — Strategy (pricing), State (spot condition), Composite (floor/lot reporting), Factory (spot/vehicle creation), Singleton (one lot instance), Facade (simple external interface), Proxy (stretch goal).
+
+## class-27-parking-lot-2
+Design notes/walkthrough continuing the Parking Lot LLD problem from class-26.
