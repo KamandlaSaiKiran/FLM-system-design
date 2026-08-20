@@ -1,0 +1,67 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Arial-BoldMT;\f1\froman\fcharset0 Times-Roman;\f2\fswiss\fcharset0 ArialMT;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww29200\viewh18460\viewkind0
+\deftab720
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 Parking Lot System \'97 Problem Statement
+\f1\b0 \
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f2 \cf0 Design a parking lot system for a facility (mall, airport, office complex) that manages vehicle entry, exit, spot allocation, and fee collection across multiple floors.
+\f1 \
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Structure of the lot.
+\f2\b0  The lot has multiple floors. Each floor contains a fixed number of parking spots. Spots come in different sizes \'97 Compact, Large, and Handicap. Vehicles come in different types \'97 Car, Bike, Truck \'97 and each vehicle type can only occupy spots of a compatible size (a Truck cannot fit in a Compact spot; a Bike can technically fit anywhere but shouldn't be assigned a Large spot if a smaller one is free, to avoid wasting space for a vehicle that actually needs it).
+\f1 \
+
+\f0\b Entry flow.
+\f2\b0  When a vehicle arrives, the system must find an available spot matching that vehicle's size requirement, assign the vehicle to that spot, and issue a ticket recording which vehicle is parked, which spot it occupies, and the entry timestamp. If no compatible spot is available anywhere in the lot, entry must be rejected with a clear reason rather than the system crashing, misassigning an incompatible spot, or silently doing nothing.
+\f1 \
+
+\f0\b Exit flow.
+\f2\b0  When a vehicle leaves, it presents its ticket. The system calculates the parking fee based on how long the vehicle was parked (using the ticket's entry timestamp against the current time), releases the spot back to available, and closes out the ticket.
+\f1 \
+
+\f0\b Fee calculation.
+\f2\b0  Pricing must support multiple, independently swappable schemes \'97 for example, a flat hourly rate for cars, a different rate for bikes, and potentially a weekend or peak-hour surcharge added later. Adding a new pricing scheme must not require rewriting or modifying the entry/exit flow itself.
+\f1 \
+
+\f0\b Spot behavior.
+\f2\b0  Each parking spot has its own condition at any given moment \'97 Available, Occupied, or Reserved (booked ahead of time but not yet occupied) \'97 and what actions are valid on a spot (can a vehicle park here right now? can it be reserved?) should be determined by the spot's own current condition, not by scattered conditional checks living outside the spot.
+\f1 \
+
+\f0\b Reporting.
+\f2\b0  The system must be able to report how many spots are currently available, both per individual floor and as a single combined total across the entire lot, without the reporting logic needing to know in advance how many floors exist or manually loop through them in a special way.
+\f1 \
+
+\f0\b Object creation.
+\f2\b0  Creating parking spot objects (by type) should be centralized in one place rather than having spot-construction code scattered wherever a new spot happens to be needed \'97 same for vehicle objects if the system constructs them internally.
+\f1 \
+
+\f0\b Single source of truth.
+\f2\b0  Only one parking lot instance should exist for a given physical location. Every entry, exit, and availability check across the entire system must operate against that same shared state \'97 there should be no way for two different parts of the system to end up with two different, disagreeing views of which spots are occupied.
+\f1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f2 \cf0 //skip\'a0
+\f1 \
+\pard\pardeftab720\sa240\partightenfactor0
+
+\f0\b \cf0 Simple external interface.
+\f2\b0  Whatever component is closest to the physical world \'97 a gate controller, a mobile app backend, an attendant's terminal \'97 should be able to park and unpark a vehicle through a single, simple call each, without needing to know about or manually coordinate spot-finding, ticket creation, and fee calculation itself.
+\f1 \
+
+\f0\b Non-functional / stretch goal.
+\f2\b0  If ticket history or spot lookups become expensive (e.g. pulled from a database) or need to be access-controlled (e.g. only admins can view another user's ticket history), that concern should be addable without changing the core lookup logic itself.
+\f1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \
+}
